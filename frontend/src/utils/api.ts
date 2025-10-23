@@ -296,7 +296,7 @@ export const productsAPI = {
       const response = await api.post<any>('/products', product);
       
       // Handle multiple response formats
-      if (response.data.product) {
+      if (response.data.product && (response.data.product._id || response.data.product.id)) {
         // Backend format: {message: 'Product created successfully', product: {...}}
         return response.data.product;
       } else if (response.data._id || response.data.id) {
@@ -328,7 +328,7 @@ export const productsAPI = {
       const response = await api.put<any>(`/products/${id}`, product);
       
       // Handle multiple response formats
-      if (response.data.product) {
+      if (response.data.product && (response.data.product._id || response.data.product.id)) {
         // Backend format: {message: 'Product updated successfully', product: {...}}
         return response.data.product;
       } else if (response.data._id || response.data.id) {
@@ -418,7 +418,7 @@ export const ordersAPI = {
       const response = await api.post<any>('/orders', { items, shippingAddress });
       
       // Handle multiple response formats
-      if (response.data.order) {
+      if (response.data.order && (response.data.order._id || response.data.order.id)) {
         // Backend format: {message: 'Order created successfully', order: {...}}
         return response.data.order;
       } else if (response.data._id || response.data.id) {
@@ -444,8 +444,8 @@ export const ordersAPI = {
       const response = await api.get<any>('/orders');
       
       // Handle multiple response formats
-      if (response.data.orders) {
-        // Backend format: {message: 'Orders retrieved successfully', orders: [...]}
+      if (response.data.orders && Array.isArray(response.data.orders)) {
+        // Backend format: {orders: [...]}
         return response.data.orders;
       } else if (Array.isArray(response.data)) {
         // Direct format: [{_id, items, totalAmount, ...}, ...]
@@ -470,7 +470,7 @@ export const ordersAPI = {
       const response = await api.get<any>(`/orders/${id}`);
       
       // Handle multiple response formats
-      if (response.data.order) {
+      if (response.data.order && (response.data.order._id || response.data.order.id)) {
         // Backend format: {message: 'Order retrieved successfully', order: {...}}
         return response.data.order;
       } else if (response.data._id || response.data.id) {
@@ -496,7 +496,7 @@ export const ordersAPI = {
       const response = await api.patch<any>(`/orders/${id}/status`, { status });
       
       // Handle multiple response formats
-      if (response.data.order) {
+      if (response.data.order && (response.data.order._id || response.data.order.id)) {
         // Backend format: {message: 'Order status updated successfully', order: {...}}
         return response.data.order;
       } else if (response.data._id || response.data.id) {
