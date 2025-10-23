@@ -213,15 +213,16 @@ export const productsAPI = {
       });
       
       const response = await api.get<ApiResponse<Product[]>>(`/products?${params.toString()}`);
-      const products = handleApiResponse(response);
       
-      // Products retrieved
-      
-      // Return in legacy format for backward compatibility
-      return {
-        products: products,
-        pagination: response.data.pagination!
-      };
+      // Handle paginated response directly since it has a different structure
+      if (response.data.success) {
+        return {
+          products: response.data.data || [],
+          pagination: response.data.pagination!
+        };
+      } else {
+        throw new Error(response.data.message || 'API request failed');
+      }
     } catch (error: any) {
       console.error('Failed to fetch products:', error.message);
       throw new Error(error.response?.data?.message || 'Failed to fetch products');
@@ -304,10 +305,13 @@ export const productsAPI = {
     
     try {
       const response = await api.get<ApiResponse<{ categories: string[] }>>('/products/categories/list');
-      const data = handleApiResponse(response);
       
-      // Categories retrieved
-      return data.categories;
+      // Handle response directly since it has a different structure
+      if (response.data.success) {
+        return response.data.data?.categories || [];
+      } else {
+        throw new Error(response.data.message || 'API request failed');
+      }
     } catch (error: any) {
       console.error('Failed to fetch categories:', error.message);
       throw new Error(error.response?.data?.message || 'Failed to fetch categories');
