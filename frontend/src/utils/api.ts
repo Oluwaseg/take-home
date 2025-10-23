@@ -294,18 +294,17 @@ export const productsAPI = {
 
     try {
       const response = await api.post<any>('/products', product);
-      console.log('🔍 Create Product Response:', response.data);
       
       // Handle multiple response formats
-      if (response.data._id || response.data.id) {
+      if (response.data.product) {
+        // Backend format: {message: 'Product created successfully', product: {...}}
+        return response.data.product;
+      } else if (response.data._id || response.data.id) {
         // Direct format: {_id, name, price, ...}
         return response.data;
       } else if (response.data.success && response.data.data) {
         // Wrapped format: {success: true, data: {_id, name, price, ...}} or {success: true, data: {product: {...}}}
         return response.data.data.product || response.data.data;
-      } else if (response.data.product) {
-        // Alternative format: {product: {_id, name, price, ...}}
-        return response.data.product;
       } else {
         console.error('❌ Unexpected response format:', response.data);
         throw new Error('Invalid response format');
@@ -327,18 +326,17 @@ export const productsAPI = {
 
     try {
       const response = await api.put<any>(`/products/${id}`, product);
-      console.log('🔍 Update Product Response:', response.data);
       
       // Handle multiple response formats
-      if (response.data._id || response.data.id) {
+      if (response.data.product) {
+        // Backend format: {message: 'Product updated successfully', product: {...}}
+        return response.data.product;
+      } else if (response.data._id || response.data.id) {
         // Direct format: {_id, name, price, ...}
         return response.data;
       } else if (response.data.success && response.data.data) {
         // Wrapped format: {success: true, data: {_id, name, price, ...}} or {success: true, data: {product: {...}}}
         return response.data.data.product || response.data.data;
-      } else if (response.data.product) {
-        // Alternative format: {product: {_id, name, price, ...}}
-        return response.data.product;
       } else {
         console.error('❌ Unexpected response format:', response.data);
         throw new Error('Invalid response format');
@@ -418,18 +416,17 @@ export const ordersAPI = {
 
     try {
       const response = await api.post<any>('/orders', { items, shippingAddress });
-      console.log('🔍 Create Order Response:', response.data);
       
       // Handle multiple response formats
-      if (response.data._id || response.data.id) {
+      if (response.data.order) {
+        // Backend format: {message: 'Order created successfully', order: {...}}
+        return response.data.order;
+      } else if (response.data._id || response.data.id) {
         // Direct format: {_id, items, totalAmount, ...}
         return response.data;
       } else if (response.data.success && response.data.data) {
         // Wrapped format: {success: true, data: {_id, items, totalAmount, ...}}
         return response.data.data;
-      } else if (response.data.order) {
-        // Alternative format: {order: {_id, items, totalAmount, ...}}
-        return response.data.order;
       } else {
         console.error('❌ Unexpected response format:', response.data);
         throw new Error('Invalid response format');
@@ -446,14 +443,18 @@ export const ordersAPI = {
     try {
       const response = await api.get<any>('/orders');
       
-      // Handle both response formats
-      if (Array.isArray(response.data)) {
+      // Handle multiple response formats
+      if (response.data.orders) {
+        // Backend format: {message: 'Orders retrieved successfully', orders: [...]}
+        return response.data.orders;
+      } else if (Array.isArray(response.data)) {
         // Direct format: [{_id, items, totalAmount, ...}, ...]
         return response.data;
       } else if (response.data.success && response.data.data) {
         // Wrapped format: {success: true, data: [{_id, items, totalAmount, ...}, ...]}
         return response.data.data;
       } else {
+        console.error('❌ Unexpected response format:', response.data);
         throw new Error('Invalid response format');
       }
     } catch (error: any) {
@@ -468,14 +469,18 @@ export const ordersAPI = {
     try {
       const response = await api.get<any>(`/orders/${id}`);
       
-      // Handle both response formats
-      if (response.data._id || response.data.id) {
+      // Handle multiple response formats
+      if (response.data.order) {
+        // Backend format: {message: 'Order retrieved successfully', order: {...}}
+        return response.data.order;
+      } else if (response.data._id || response.data.id) {
         // Direct format: {_id, items, totalAmount, ...}
         return response.data;
       } else if (response.data.success && response.data.data) {
         // Wrapped format: {success: true, data: {_id, items, totalAmount, ...}}
         return response.data.data;
       } else {
+        console.error('❌ Unexpected response format:', response.data);
         throw new Error('Invalid response format');
       }
     } catch (error: any) {
@@ -490,14 +495,18 @@ export const ordersAPI = {
     try {
       const response = await api.patch<any>(`/orders/${id}/status`, { status });
       
-      // Handle both response formats
-      if (response.data._id || response.data.id) {
+      // Handle multiple response formats
+      if (response.data.order) {
+        // Backend format: {message: 'Order status updated successfully', order: {...}}
+        return response.data.order;
+      } else if (response.data._id || response.data.id) {
         // Direct format: {_id, items, totalAmount, ...}
         return response.data;
       } else if (response.data.success && response.data.data) {
         // Wrapped format: {success: true, data: {_id, items, totalAmount, ...}}
         return response.data.data;
       } else {
+        console.error('❌ Unexpected response format:', response.data);
         throw new Error('Invalid response format');
       }
     } catch (error: any) {
