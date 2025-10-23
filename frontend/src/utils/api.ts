@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 import toast from 'react-hot-toast';
 // import { logger } from './logger';
 import { validateData, validationSchemas } from './validation';
@@ -8,7 +8,6 @@ import {
   Product, 
   Order, 
   SearchFilters, 
-  ApiResponse,
   HealthResponse 
 } from '../types';
 // import { someUnusedUtil } from './utils';
@@ -92,26 +91,7 @@ api.interceptors.response.use(
   }
 );
 
-// Helper function to handle API responses
-const handleApiResponse = <T>(response: AxiosResponse<ApiResponse<T>>): T => {
-  if (response.data.success) {
-    return response.data.data as T;
-  }
-  throw new Error(response.data.message || 'API request failed');
-};
-
-// Helper function for auth responses (they have a different structure)
-const handleAuthResponse = (response: AxiosResponse<ApiResponse<{ user: any; token: string }>>): AuthResponse => {
-  if (response.data.success && response.data.data) {
-    return {
-      success: true,
-      message: response.data.message,
-      data: response.data.data,
-      timestamp: response.data.timestamp
-    };
-  }
-  throw new Error(response.data.message || 'API request failed');
-};
+// Helper functions removed - now handling responses directly in each API function
 
 // Auth API - with better error handling and validation
 export const authAPI = {
@@ -125,15 +105,34 @@ export const authAPI = {
     }
 
     try {
-      const response = await api.post<ApiResponse<{ user: any; token: string }>>('/auth/login', { 
+      const response = await api.post<any>('/auth/login', { 
         username, 
         password 
       });
       
-      const authResponse = handleAuthResponse(response);
-      // Login successful
-      
-      return authResponse;
+      // Handle both response formats
+      if (response.data.token && response.data.user) {
+        // Direct format: {message, token, user}
+        return {
+          success: true,
+          message: response.data.message || 'Login successful',
+          data: {
+            user: response.data.user,
+            token: response.data.token
+          },
+          timestamp: new Date().toISOString()
+        };
+      } else if (response.data.success && response.data.data) {
+        // Wrapped format: {success: true, data: {user, token}}
+        return {
+          success: true,
+          message: response.data.message,
+          data: response.data.data,
+          timestamp: response.data.timestamp
+        };
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error: any) {
       // Login failed
       throw new Error(error.response?.data?.message || 'Login failed');
@@ -150,16 +149,35 @@ export const authAPI = {
     }
 
     try {
-      const response = await api.post<ApiResponse<{ user: any; token: string }>>('/auth/register', { 
+      const response = await api.post<any>('/auth/register', { 
         username, 
         password, 
         email 
       });
       
-      const authResponse = handleAuthResponse(response);
-      // Registration successful
-      
-      return authResponse;
+      // Handle both response formats
+      if (response.data.token && response.data.user) {
+        // Direct format: {message, token, user}
+        return {
+          success: true,
+          message: response.data.message || 'Registration successful',
+          data: {
+            user: response.data.user,
+            token: response.data.token
+          },
+          timestamp: new Date().toISOString()
+        };
+      } else if (response.data.success && response.data.data) {
+        // Wrapped format: {success: true, data: {user, token}}
+        return {
+          success: true,
+          message: response.data.message,
+          data: response.data.data,
+          timestamp: response.data.timestamp
+        };
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error: any) {
       // Registration failed
       throw new Error(error.response?.data?.message || 'Registration failed');
@@ -170,10 +188,18 @@ export const authAPI = {
     // Getting current user
     
     try {
-      const response = await api.get<ApiResponse<{ user: any }>>('/auth/me');
-      const userData = handleApiResponse(response);
-      // Current user retrieved
-      return userData;
+      const response = await api.get<any>('/auth/me');
+      
+      // Handle both response formats
+      if (response.data.user) {
+        // Direct format: {user: {...}}
+        return response.data.user;
+      } else if (response.data.success && response.data.data) {
+        // Wrapped format: {success: true, data: {user: {...}}}
+        return response.data.data.user || response.data.data;
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error: any) {
       // Get current user failed
       throw new Error(error.response?.data?.message || 'Failed to get user info');
@@ -239,11 +265,18 @@ export const productsAPI = {
     // Fetching product
     
     try {
-      const response = await api.get<ApiResponse<Product>>(`/products/${id}`);
-      const product = handleApiResponse(response);
+      const response = await api.get<any>(`/products/${id}`);
       
-      // Product retrieved
-      return product;
+      // Handle both response formats
+      if (response.data._id || response.data.id) {
+        // Direct format: {_id, name, price, ...}
+        return response.data;
+      } else if (response.data.success && response.data.data) {
+        // Wrapped format: {success: true, data: {_id, name, price, ...}}
+        return response.data.data;
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error: any) {
       console.error(`Failed to fetch product: ${id}:`, error.message);
       throw new Error(error.response?.data?.message || 'Failed to fetch product');
@@ -260,12 +293,18 @@ export const productsAPI = {
     }
 
     try {
-      const response = await api.post<ApiResponse<{ product: Product }>>('/products', product);
-      const data = handleApiResponse(response);
-      const createdProduct = data.product;
+      const response = await api.post<any>('/products', product);
       
-      // Product created
-      return createdProduct;
+      // Handle both response formats
+      if (response.data._id || response.data.id) {
+        // Direct format: {_id, name, price, ...}
+        return response.data;
+      } else if (response.data.success && response.data.data) {
+        // Wrapped format: {success: true, data: {_id, name, price, ...}} or {success: true, data: {product: {...}}}
+        return response.data.data.product || response.data.data;
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error: any) {
       console.error(`Failed to create product: ${product.name}:`, error.message);
       throw new Error(error.response?.data?.message || 'Failed to create product');
@@ -282,12 +321,18 @@ export const productsAPI = {
     }
 
     try {
-      const response = await api.put<ApiResponse<{ product: Product }>>(`/products/${id}`, product);
-      const data = handleApiResponse(response);
-      const updatedProduct = data.product;
+      const response = await api.put<any>(`/products/${id}`, product);
       
-      // Product updated
-      return updatedProduct;
+      // Handle both response formats
+      if (response.data._id || response.data.id) {
+        // Direct format: {_id, name, price, ...}
+        return response.data;
+      } else if (response.data.success && response.data.data) {
+        // Wrapped format: {success: true, data: {_id, name, price, ...}} or {success: true, data: {product: {...}}}
+        return response.data.data.product || response.data.data;
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error: any) {
       console.error(`Failed to update product: ${id}:`, error.message);
       throw new Error(error.response?.data?.message || 'Failed to update product');
@@ -331,11 +376,18 @@ export const productsAPI = {
     // Fetching low stock products
     
     try {
-      const response = await api.get<ApiResponse<Product[]>>(`/products/admin/low-stock?threshold=${threshold}`);
-      const products = handleApiResponse(response);
+      const response = await api.get<any>(`/products/admin/low-stock?threshold=${threshold}`);
       
-      // Low stock products retrieved
-      return products;
+      // Handle both response formats
+      if (Array.isArray(response.data)) {
+        // Direct format: [{_id, name, price, ...}, ...]
+        return response.data;
+      } else if (response.data.success && response.data.data) {
+        // Wrapped format: {success: true, data: [{_id, name, price, ...}, ...]}
+        return response.data.data;
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error: any) {
       console.error('Failed to fetch low stock products:', error.message);
       throw new Error(error.response?.data?.message || 'Failed to fetch low stock products');
@@ -355,11 +407,18 @@ export const ordersAPI = {
     }
 
     try {
-      const response = await api.post<ApiResponse<Order>>('/orders', { items, shippingAddress });
-      const order = handleApiResponse(response);
+      const response = await api.post<any>('/orders', { items, shippingAddress });
       
-      // Order created
-      return order;
+      // Handle both response formats
+      if (response.data._id || response.data.id) {
+        // Direct format: {_id, items, totalAmount, ...}
+        return response.data;
+      } else if (response.data.success && response.data.data) {
+        // Wrapped format: {success: true, data: {_id, items, totalAmount, ...}}
+        return response.data.data;
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error: any) {
       console.error('Failed to create order:', error.message);
       throw new Error(error.response?.data?.message || 'Failed to create order');
@@ -370,11 +429,18 @@ export const ordersAPI = {
     // Fetching orders
     
     try {
-      const response = await api.get<ApiResponse<Order[]>>('/orders');
-      const orders = handleApiResponse(response);
+      const response = await api.get<any>('/orders');
       
-      // Orders retrieved
-      return orders;
+      // Handle both response formats
+      if (Array.isArray(response.data)) {
+        // Direct format: [{_id, items, totalAmount, ...}, ...]
+        return response.data;
+      } else if (response.data.success && response.data.data) {
+        // Wrapped format: {success: true, data: [{_id, items, totalAmount, ...}, ...]}
+        return response.data.data;
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error: any) {
       console.error('Failed to fetch orders:', error.message);
       throw new Error(error.response?.data?.message || 'Failed to fetch orders');
@@ -385,11 +451,18 @@ export const ordersAPI = {
     // Fetching order
     
     try {
-      const response = await api.get<ApiResponse<Order>>(`/orders/${id}`);
-      const order = handleApiResponse(response);
+      const response = await api.get<any>(`/orders/${id}`);
       
-      // Order retrieved
-      return order;
+      // Handle both response formats
+      if (response.data._id || response.data.id) {
+        // Direct format: {_id, items, totalAmount, ...}
+        return response.data;
+      } else if (response.data.success && response.data.data) {
+        // Wrapped format: {success: true, data: {_id, items, totalAmount, ...}}
+        return response.data.data;
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error: any) {
       console.error(`Failed to fetch order: ${id}:`, error.message);
       throw new Error(error.response?.data?.message || 'Failed to fetch order');
@@ -400,11 +473,18 @@ export const ordersAPI = {
     // Updating order status
     
     try {
-      const response = await api.patch<ApiResponse<Order>>(`/orders/${id}/status`, { status });
-      const order = handleApiResponse(response);
+      const response = await api.patch<any>(`/orders/${id}/status`, { status });
       
-      // Order status updated
-      return order;
+      // Handle both response formats
+      if (response.data._id || response.data.id) {
+        // Direct format: {_id, items, totalAmount, ...}
+        return response.data;
+      } else if (response.data.success && response.data.data) {
+        // Wrapped format: {success: true, data: {_id, items, totalAmount, ...}}
+        return response.data.data;
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error: any) {
       console.error(`Failed to update order status: ${id}:`, error.message);
       throw new Error(error.response?.data?.message || 'Failed to update order status');
