@@ -294,15 +294,20 @@ export const productsAPI = {
 
     try {
       const response = await api.post<any>('/products', product);
+      console.log('🔍 Create Product Response:', response.data);
       
-      // Handle both response formats
+      // Handle multiple response formats
       if (response.data._id || response.data.id) {
         // Direct format: {_id, name, price, ...}
         return response.data;
       } else if (response.data.success && response.data.data) {
         // Wrapped format: {success: true, data: {_id, name, price, ...}} or {success: true, data: {product: {...}}}
         return response.data.data.product || response.data.data;
+      } else if (response.data.product) {
+        // Alternative format: {product: {_id, name, price, ...}}
+        return response.data.product;
       } else {
+        console.error('❌ Unexpected response format:', response.data);
         throw new Error('Invalid response format');
       }
     } catch (error: any) {
@@ -322,15 +327,20 @@ export const productsAPI = {
 
     try {
       const response = await api.put<any>(`/products/${id}`, product);
+      console.log('🔍 Update Product Response:', response.data);
       
-      // Handle both response formats
+      // Handle multiple response formats
       if (response.data._id || response.data.id) {
         // Direct format: {_id, name, price, ...}
         return response.data;
       } else if (response.data.success && response.data.data) {
         // Wrapped format: {success: true, data: {_id, name, price, ...}} or {success: true, data: {product: {...}}}
         return response.data.data.product || response.data.data;
+      } else if (response.data.product) {
+        // Alternative format: {product: {_id, name, price, ...}}
+        return response.data.product;
       } else {
+        console.error('❌ Unexpected response format:', response.data);
         throw new Error('Invalid response format');
       }
     } catch (error: any) {
@@ -408,15 +418,20 @@ export const ordersAPI = {
 
     try {
       const response = await api.post<any>('/orders', { items, shippingAddress });
+      console.log('🔍 Create Order Response:', response.data);
       
-      // Handle both response formats
+      // Handle multiple response formats
       if (response.data._id || response.data.id) {
         // Direct format: {_id, items, totalAmount, ...}
         return response.data;
       } else if (response.data.success && response.data.data) {
         // Wrapped format: {success: true, data: {_id, items, totalAmount, ...}}
         return response.data.data;
+      } else if (response.data.order) {
+        // Alternative format: {order: {_id, items, totalAmount, ...}}
+        return response.data.order;
       } else {
+        console.error('❌ Unexpected response format:', response.data);
         throw new Error('Invalid response format');
       }
     } catch (error: any) {
