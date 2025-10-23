@@ -170,7 +170,9 @@ const Orders: React.FC = () => {
                         <span className="capitalize">{order.status}</span>
                       </span>
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-slate-900">${order.totalAmount.toFixed(2)}</div>
+                        <div className="text-2xl font-bold text-slate-900">
+                          ${(order.total || order.totalAmount || 0).toFixed(2)}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -195,7 +197,9 @@ const Orders: React.FC = () => {
                         </div>
                         <div className="flex items-center gap-6 ml-4">
                           <span className="text-sm font-medium text-slate-600">Qty: {item.quantity}</span>
-                          <span className="font-semibold text-slate-900 min-w-fit">${item.price.toFixed(2)}</span>
+                          <span className="font-semibold text-slate-900 min-w-fit">
+                            ${(item.price || (typeof item.product === 'object' ? item.product.price : 0)).toFixed(2)}
+                          </span>
                         </div>
                       </div>
                     ))}

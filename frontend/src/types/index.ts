@@ -38,7 +38,8 @@ export interface Order {
   _id: string;
   user: string | User;
   items: OrderItem[];
-  totalAmount: number; // Changed from total to totalAmount to match backend
+  total: number; // Backend uses 'total' field
+  totalAmount?: number; // Keep for backward compatibility
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   shippingAddress?: {
     street: string;
