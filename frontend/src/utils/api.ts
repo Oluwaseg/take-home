@@ -196,9 +196,6 @@ export const authAPI = {
 // Products API - with better error handling and validation
 export const productsAPI = {
   getProducts: async (filters: SearchFilters = {}): Promise<ProductsResponseLegacy> => {
-    console.log('🔄 getProducts called with filters:', filters);
-    console.log('🌐 API Base URL:', API_BASE_URL);
-    
     // Validate filters
     const validation = validateData(validationSchemas.searchFilters, filters);
     if (!validation.success) {
@@ -214,28 +211,26 @@ export const productsAPI = {
       });
       
       const url = `/products?${params.toString()}`;
-      console.log('📡 Making request to:', url);
+      const response = await api.get<any>(url);
       
-      const response = await api.get<ApiResponse<Product[]>>(url);
-      console.log('✅ Products API Response:', response.data);
-      
-      // Handle paginated response directly since it has a different structure
-      if (response.data.success) {
+      // Handle the actual response format from the API
+      if (response.data.products && response.data.pagination) {
+        // Direct format: {products: [...], pagination: {...}}
+        return {
+          products: response.data.products || [],
+          pagination: response.data.pagination
+        };
+      } else if (response.data.success && response.data.data) {
+        // Wrapped format: {success: true, data: [...], pagination: {...}}
         return {
           products: response.data.data || [],
           pagination: response.data.pagination!
         };
       } else {
-        throw new Error(response.data.message || 'API request failed');
+        throw new Error('Invalid response format');
       }
     } catch (error: any) {
-      console.error('❌ Failed to fetch products:', error);
-      console.error('❌ Error details:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        config: error.config
-      });
+      console.error('Failed to fetch products:', error.message);
       throw new Error(error.response?.data?.message || 'Failed to fetch products');
     }
   },
@@ -312,30 +307,22 @@ export const productsAPI = {
   },
 
   getCategories: async (): Promise<string[]> => {
-    console.log('🔄 getCategories called');
-    console.log('🌐 API Base URL:', API_BASE_URL);
-    
     try {
       const url = '/products/categories/list';
-      console.log('📡 Making request to:', url);
+      const response = await api.get<any>(url);
       
-      const response = await api.get<ApiResponse<{ categories: string[] }>>(url);
-      console.log('✅ Categories API Response:', response.data);
-      
-      // Handle response directly since it has a different structure
-      if (response.data.success) {
-        return response.data.data?.categories || [];
+      // Handle the actual response format from the API
+      if (response.data.categories) {
+        // Direct format: {categories: [...]}
+        return response.data.categories || [];
+      } else if (response.data.success && response.data.data?.categories) {
+        // Wrapped format: {success: true, data: {categories: [...]}}
+        return response.data.data.categories || [];
       } else {
-        throw new Error(response.data.message || 'API request failed');
+        throw new Error('Invalid response format');
       }
     } catch (error: any) {
-      console.error('❌ Failed to fetch categories:', error);
-      console.error('❌ Error details:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        config: error.config
-      });
+      console.error('Failed to fetch categories:', error.message);
       throw new Error(error.response?.data?.message || 'Failed to fetch categories');
     }
   },
