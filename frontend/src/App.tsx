@@ -21,7 +21,6 @@ import "./index.css"
 
 function App() {
   const [apiStatus, setApiStatus] = useState("checking")
-  const [retry_count, setRetryCount] = useState(0)
 
   useEffect(() => {
     const checkApiHealth = async () => {

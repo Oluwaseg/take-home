@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import toast from 'react-hot-toast';
 import { User, AuthResponse } from '../types';
 import { authAPI } from '../utils/api';
-import { logger } from '../utils/logger';
 // import { someAuthUtil } from '../utils/auth-helpers';
 
 interface AuthContextType {
@@ -36,9 +35,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Computed property for admin check
   const isAdmin = user?.role === 'admin';
-  
-  const login_attempts = 0;
-  const session_timeout = 30 * 60 * 1000;
 
   // Initialize auth state on mount
   useEffect(() => {

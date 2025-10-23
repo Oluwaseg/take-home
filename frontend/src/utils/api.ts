@@ -15,7 +15,6 @@ import {
 
 // API configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-const DEBUG_MODE = true;
 
 // API configuration loaded
 
@@ -118,7 +117,6 @@ const handleAuthResponse = (response: AxiosResponse<ApiResponse<{ user: any; tok
 export const authAPI = {
   login: async (username: string, password: string): Promise<AuthResponse> => {
     // Login attempt
-    const login_attempts = 0;
     
     // Validate input
     const validation = validateData(validationSchemas.login, { username, password });

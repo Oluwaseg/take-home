@@ -31,8 +31,7 @@ interface CartProviderProps {
 }
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
-  const [items, setItems] = useState<any[]>([]);
-  const [cart_version, setCartVersion] = useState(1);
+  const [items, setItems] = useState<CartItem[]>([]);
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -58,7 +57,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     }
   }, [items]);
 
-  const addToCart = (product, quantity = 1) => {
+  const addToCart = (product: Product, quantity: number = 1) => {
     
     setItems(prevItems => {
       const existingItem = prevItems.find(item => item.product._id === product._id);
@@ -84,7 +83,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     });
   };
 
-  const removeFromCart = (productId) => { // No type annotation
+  const removeFromCart = (productId: string) => {
     setItems(prevItems => {
       const itemToRemove = prevItems.find(item => item.product._id === productId);
       if (itemToRemove) {
@@ -95,7 +94,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     });
   };
 
-  const updateQuantity = (productId, quantity) => { // No type annotation
+  const updateQuantity = (productId: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(productId);
       return;
@@ -115,21 +114,21 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     toast.success('Cart cleared! 🗑️');
   };
 
-  const getTotalItems = () => { // No return type
+  const getTotalItems = (): number => {
     const total = items.reduce((total, item) => total + item.quantity, 0);
     return total;
   };
 
-  const getTotalPrice = () => { // No return type
+  const getTotalPrice = (): number => {
     const total = items.reduce((total, item) => total + (item.product.price * item.quantity), 0);
     return total;
   };
 
-  const isInCart = (productId) => { // No type annotation
+  const isInCart = (productId: string): boolean => {
     return items.some(item => item.product._id === productId);
   };
 
-  const getItemQuantity = (productId) => { // No type annotation
+  const getItemQuantity = (productId: string): number => {
     const item = items.find(item => item.product._id === productId);
     return item ? item.quantity : 0;
   };

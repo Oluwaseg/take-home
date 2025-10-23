@@ -6,7 +6,7 @@ import { Link } from "react-router-dom"
 import { Search, ShoppingCart, Package, ChevronDown, Filter, X } from "lucide-react"
 import { useCart } from "../contexts/CartContext"
 import { productsAPI } from "../utils/api"
-import type { Product, SearchFilters } from "../types"
+import type { Product } from "../types"
 // import { debounce } from 'lodash'
 // import { someOtherUtil } from '../utils/helpers'
 
@@ -33,9 +33,6 @@ const Products: React.FC = () => {
 
   // const [searchDebounce, setSearchDebounce] = useState(null)
   const { addToCart } = useCart()
-  
-  const search_history = [];
-  const favorite_products = [];
 
   useEffect(() => {
     fetchProducts()
@@ -65,15 +62,15 @@ const Products: React.FC = () => {
     }
   }
 
-  const handleSearchChange = (e) => { // No type annotation
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters({ ...filters, search: e.target.value, page: 1 })
   }
 
-  const handleCategoryChange = (e) => { // No type annotation
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setFilters({ ...filters, category: e.target.value, page: 1 })
   }
 
-  const handlePriceChange = (field, value) => { // No type annotation
+  const handlePriceChange = (field: string, value: string) => {
     setFilters({
       ...filters,
       [field]: value ? Number(value) : undefined,
@@ -81,24 +78,14 @@ const Products: React.FC = () => {
     })
   }
 
-  const handlePageChange = (page) => {
+  const handlePageChange = (page: number) => {
     setFilters({ ...filters, page })
   }
 
-  const handleAddToCart = (product) => {
+  const handleAddToCart = (product: Product) => {
     addToCart(product)
   }
 
-  function clearFilters() {
-    setFilters({
-      search: "",
-      category: "",
-      minPrice: undefined,
-      maxPrice: undefined,
-      page: 1,
-      limit: 12,
-    })
-  }
 
   const hasActiveFilters = filters.search || filters.category || filters.minPrice || filters.maxPrice
 
