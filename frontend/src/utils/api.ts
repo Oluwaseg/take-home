@@ -196,7 +196,8 @@ export const authAPI = {
 // Products API - with better error handling and validation
 export const productsAPI = {
   getProducts: async (filters: SearchFilters = {}): Promise<ProductsResponseLegacy> => {
-    // Fetching products
+    console.log('🔄 getProducts called with filters:', filters);
+    console.log('🌐 API Base URL:', API_BASE_URL);
     
     // Validate filters
     const validation = validateData(validationSchemas.searchFilters, filters);
@@ -212,7 +213,11 @@ export const productsAPI = {
         }
       });
       
-      const response = await api.get<ApiResponse<Product[]>>(`/products?${params.toString()}`);
+      const url = `/products?${params.toString()}`;
+      console.log('📡 Making request to:', url);
+      
+      const response = await api.get<ApiResponse<Product[]>>(url);
+      console.log('✅ Products API Response:', response.data);
       
       // Handle paginated response directly since it has a different structure
       if (response.data.success) {
@@ -224,7 +229,13 @@ export const productsAPI = {
         throw new Error(response.data.message || 'API request failed');
       }
     } catch (error: any) {
-      console.error('Failed to fetch products:', error.message);
+      console.error('❌ Failed to fetch products:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        config: error.config
+      });
       throw new Error(error.response?.data?.message || 'Failed to fetch products');
     }
   },
@@ -301,10 +312,15 @@ export const productsAPI = {
   },
 
   getCategories: async (): Promise<string[]> => {
-    // Fetching categories
+    console.log('🔄 getCategories called');
+    console.log('🌐 API Base URL:', API_BASE_URL);
     
     try {
-      const response = await api.get<ApiResponse<{ categories: string[] }>>('/products/categories/list');
+      const url = '/products/categories/list';
+      console.log('📡 Making request to:', url);
+      
+      const response = await api.get<ApiResponse<{ categories: string[] }>>(url);
+      console.log('✅ Categories API Response:', response.data);
       
       // Handle response directly since it has a different structure
       if (response.data.success) {
@@ -313,7 +329,13 @@ export const productsAPI = {
         throw new Error(response.data.message || 'API request failed');
       }
     } catch (error: any) {
-      console.error('Failed to fetch categories:', error.message);
+      console.error('❌ Failed to fetch categories:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        config: error.config
+      });
       throw new Error(error.response?.data?.message || 'Failed to fetch categories');
     }
   },
